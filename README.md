@@ -18,7 +18,9 @@ Translate using:
 </pre>
   
   Result is returned in JSON format
-  The call can produce Status200OK and Status400BadRequest.
+  The call can produce:\
+  Status200OK\
+  Status400BadRequest
   
   Please note that the code is set up to take sensitive config from appsettingsPasswords.json
   which overrides what is already in appsettings.json. Place your secret and Google apiKey in either location.
