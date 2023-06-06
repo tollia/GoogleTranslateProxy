@@ -2,6 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.InteropServices;
+using System.Text.Unicode;
+using System.Text.Json;
 
 namespace GoogleTranslateProxy.Controllers
 {
@@ -27,15 +31,13 @@ namespace GoogleTranslateProxy.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Produces("application/json")]
-        public async Task<IActionResult> Translate([FromBody] TranslateRequest request)
+        public async Task<TranslationResult?> Translate([FromBody] TranslateRequest request)
         {
-            var accessToken = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var targetUrl = "https://translation.googleapis.com/language/translate/v2";
             var httpClient = _httpClientFactory.CreateClient();
 
             // Set up the request to the Google Translate API
             var translationRequest = new HttpRequestMessage(HttpMethod.Post, targetUrl);
-            translationRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
             translationRequest.Headers.Add("X-Goog-Api-Key", _googleTranslateApiKey);
             translationRequest.Content = new FormUrlEncodedContent(new[]
             {
@@ -46,18 +48,42 @@ namespace GoogleTranslateProxy.Controllers
             });
 
             // Send the request and get the response
-            var translationResponse = await httpClient.SendAsync(translationRequest);
-            var translationResult = await translationResponse.Content.ReadAsStringAsync();
+            HttpResponseMessage translationResponse = await httpClient.SendAsync(translationRequest);
+            string responseContent = await translationResponse.Content.ReadAsStringAsync();
+            TranslationResult translationResult = JsonSerializer.Deserialize<TranslationResult>(responseContent);
+            TranslationData translationData = translationResult.Data;
 
-            return Ok(translationResult);
+            // The below block is only here to provide a sample of how to interpret the result.
+            if (translationResult?.Data == null)
+            {
+                // Response could not be Deserialized into the TranslationResult object.
+            }
+            else if (translationResult.Error != null)
+            {
+                // Handle the error case.
+                var errorCode = translationResult.Error.Code;
+                var errorMessage = translationResult.Error.Message;
+            }
+            else if (translationData.Translations.Count == 0)
+            { 
+                // There was no translation returned but return code was success.
+            }
+            else 
+            {
+                // Access the translations as before.
+                var translatedText = translationData.Translations[0].TranslatedText;
+                var detectedLanguage = translationData.Translations[0].DetectedSourceLanguage;
+            }
+
+            return translationResult;
         }
 
         [HttpGet("Token")]
         [AllowAnonymous]
         public IActionResult Token(string secret)
         {
-            IConfigurationSection accessTokenSection = _configuration.GetSection("AcccessToken");
-            AccessToken accessToken = new AccessToken(
+            IConfigurationSection accessTokenSection = _configuration.GetSection("AccessToken");
+            AccessToken accessToken = new(
                 secret,
                 accessTokenSection["ValidIssuer"],
                 accessTokenSection["ValidAudience"],

@@ -9,18 +9,61 @@ Translate using:
   https://host:port/api/Translate/Translate
 
   Sample payload to POST to the endpoint is:
-<pre>
+  <pre>
   {
-    "text": "string",
-    "sourceLanguage": "string",
-    "targetLanguage": "string"
+    "text": "Computer",
+    "sourceLanguage": "en",
+    "targetLanguage": "is"
   }
-</pre>
+  </pre>
   
-  Result is returned in JSON format
+Result is returned in JSON format:
+  <pre>
+  {
+    "data": {
+      "translations": [
+        {
+          "translatedText": "Tölva",
+          "detectedSourceLanguage": null
+        }
+      ]
+    },
+    "error": null
+  }
+  </pre>
   The call can produce:\
   Status200OK\
   Status400BadRequest
+
+If there is a parameter error like passing targetLanguage=fictionalLanguage we get:
+  <pre>
+  {
+    "data": null,
+    "error": {
+      "code": 400,
+      "message": "Invalid Value",
+      "errors": [
+        {
+          "message": "Invalid Value",
+          "domain": "global",
+          "reason": "invalid"
+        }
+      ],
+      "details": [
+        {
+          "@type": "type.googleapis.com/google.rpc.BadRequest",
+          "fieldViolations": [
+            {
+              "field": "target",
+              "description": "Target language: fictionalLanguage"
+            }
+          ]
+        }
+      ]
+    }
+  }
+  </pre>
+
   
-  Please note that the code is set up to take sensitive config from appsettingsPasswords.json
-  which overrides what is already in appsettings.json. Place your secret and Google apiKey in either location.
+Please note that the code is set up to take sensitive config from appsettings.Passwords.json
+which overrides what is already in appsettings.json. Place your secret and Google apiKey in either location.
