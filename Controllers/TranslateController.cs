@@ -1,11 +1,9 @@
 ﻿using GoogleTranslateProxy.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using static System.Net.Mime.MediaTypeNames;
-using System.Runtime.InteropServices;
-using System.Text.Unicode;
+using System.Text;
 using System.Text.Json;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace GoogleTranslateProxy.Controllers
 {
@@ -39,13 +37,18 @@ namespace GoogleTranslateProxy.Controllers
             // Set up the request to the Google Translate API
             var translationRequest = new HttpRequestMessage(HttpMethod.Post, targetUrl);
             translationRequest.Headers.Add("X-Goog-Api-Key", _googleTranslateApiKey);
-            translationRequest.Content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("q", request.Text),
-                new KeyValuePair<string, string>("source", request.SourceLanguage),
-                new KeyValuePair<string, string>("target", request.TargetLanguage),
-                new KeyValuePair<string, string>("format", "text")
-            });
+            translationRequest.Content = new StringContent(
+                JsonSerializer.Serialize(
+                new
+                {
+                    q = request.Text.ToArray<string>(),
+                    source = request.SourceLanguage,
+                    target = request.TargetLanguage,
+                    format = "text"
+                }),
+                Encoding.UTF8, 
+                "application/json"
+            );
 
             // Send the request and get the response
             HttpResponseMessage translationResponse = await httpClient.SendAsync(translationRequest);
