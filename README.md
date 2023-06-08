@@ -11,7 +11,7 @@ Translate using:
   Sample payload to POST to the endpoint is:
   <pre>
   {
-    "text": "Computer",
+    "text": ["Computer", "Table"],
     "sourceLanguage": "en",
     "targetLanguage": "is"
   }
@@ -24,6 +24,10 @@ Result is returned in JSON format:
       "translations": [
         {
           "translatedText": "Tölva",
+          "detectedSourceLanguage": null
+        },
+        {
+          "translatedText": "Borð",
           "detectedSourceLanguage": null
         }
       ]
