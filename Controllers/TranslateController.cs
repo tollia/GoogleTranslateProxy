@@ -25,12 +25,13 @@ namespace GoogleTranslateProxy.Controllers
             _googleTranslateApiKey = _configuration["Google:ApiKey"];
         }
 
-        [HttpPost]
+        [HttpPost("Translate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Produces("application/json")]
         public async Task<TranslationResult?> Translate([FromBody] TranslateRequest request)
         {
+            //https://translation.googleapis.com/language/translate/v2
             var targetUrl = "https://translation.googleapis.com/language/translate/v2";
             var httpClient = _httpClientFactory.CreateClient();
 
