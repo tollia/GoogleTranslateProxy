@@ -31,7 +31,6 @@ namespace GoogleTranslateProxy.Controllers
         [Produces("application/json")]
         public async Task<TranslationResult?> Translate([FromBody] TranslateRequest request)
         {
-            //https://translation.googleapis.com/language/translate/v2
             var targetUrl = "https://translation.googleapis.com/language/translate/v2";
             var httpClient = _httpClientFactory.CreateClient();
 
